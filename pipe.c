@@ -20,32 +20,50 @@ int main(int argc, char *argv[])
     2. parent waits for LS to finish before proceeding and forking another child
     3. parent waits again for the cat child process to complete before completition
     */
-    int return_code_ls = fork();
+    int pipe_fd[2];
+    if (pipe(pipe_fd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    int return_code_ls = fork(); // Fork for ls
     if (return_code_ls == 0) {
+        // Child process for ls
         printf("This is the child process for ls!\n");
+        close(pipe_fd[0]); // Close read end of the pipe in ls process
+        dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end of the pipe
+        close(pipe_fd[1]); // Close write end of the pipe (not needed anymore)
         execlp("ls", "ls", "-a", "-l", NULL);
+        // If execlp returns, an error occurred
         perror("execlp ls");
         exit(EXIT_FAILURE);
-    } else if (return_code_ls > 0) {// Parent process
-        printf("LS PARENT\n");
+    } else if (return_code_ls > 0) {
+        // Parent process
+        printf("I am lazy parent, letting my child to ls the directory\n");
+        printf("I will just wait for their report\n");
         int pid_ls = return_code_ls;
+        close(pipe_fd[1]); // Close write end of the pipe in parent process
         int status_ls = 0;
         waitpid(pid_ls, &status_ls, 0);
         printf("Child process for ls exits with code: %d\n", WEXITSTATUS(status_ls));
 
-        // Fork for cat
-        int return_code_cat = fork();
+        int return_code_cat = fork(); // Fork for cat
         if (return_code_cat == 0) {
             // Child process for cat
             printf("This is the child process for cat!\n");
+            close(pipe_fd[1]); // Close write end of the pipe in cat process
+            dup2(pipe_fd[0], STDIN_FILENO); // Redirect stdin to the read end of the pipe
+            close(pipe_fd[0]); // Close read end of the pipe (not needed anymore)
             execlp("cat", "cat", NULL);
             // If execlp returns, an error occurred
             perror("execlp cat");
             exit(EXIT_FAILURE);
         } else if (return_code_cat > 0) {
             // Parent process
-            printf("CAT parent\n");
+            printf("I am lazy parent, letting my child to cat the output\n");
+            printf("I will just wait for their report\n");
             int pid_cat = return_code_cat;
+            close(pipe_fd[0]); // Close read end of the pipe in parent process
             int status_cat = 0;
             waitpid(pid_cat, &status_cat, 0);
             printf("Child process for cat exits with code: %d\n", WEXITSTATUS(status_cat));
@@ -61,6 +79,7 @@ int main(int argc, char *argv[])
     }
     printf("They finished; Done!\n");
     return 0;
+
 }
 
 // DISCUSSIOn
