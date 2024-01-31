@@ -14,42 +14,31 @@ pipe()
 */
 int main(int argc, char *argv[])
 {
-	if(argc < 2) { // need pipe SMTHG at least
-		fprintf(stderr, "add at least 1 argument \n", argv[0]);
-        return EXIT_FAILURE;
-	}
-
-	//create a pipe
-	int pipe_fds[2];
-	int pipe_return = pipe(pipe_fds);
-    if (pipe_return == -1) {
-        perror("pipe error");
-        return EXIT_FAILURE;
-    }
-	
-	pid_t pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        return EXIT_FAILURE;
-    } else if (pid == 0) { // Child process
-        dup2(pipe_fds[1], 1);// Redirect stdout to the write end of the pipe
-        close(pipe_fds[0]); // Close read end of the pipe
-		close(pipe_fds[1]); // Close the original write end
-
-        // Execute the command
-        if (execlp(argv[1], argv[1], NULL) == -1) {
-            perror("execlp");
-            return errno;
-        }
-
-    } else { // Parent process
-        close(pipe_fds[1]); // Close write end of the pipe
-        wait(NULL); // Wait for the child to finish
-        close(pipe_fds[0]); // Close the read end of the pipe
-
-        return EXIT_SUCCESS;
-    }
-
+	// int return_code = fork();
+    // if (return_code == 0) {
+    //     printf("This is the child process!\n");
+    //     execlp("ls", "ls", "-a", "-l", NULL);
+    //     // sleep(5);
+    //     // exit(0); // this is not necessary
+    // } else if (return_code > 0) {
+    //     printf("I am lazy parent, letting my child to ls the directory\n");
+    //     printf("I will just wait for their report\n");
+    //     int pid = return_code;
+    //     int status = 0;
+    //     waitpid(pid, &status, 0);
+    //     printf("Child process exits with code: %d\n", WEXITSTATUS(status));
+    // } else {
+    //     printf("Child process creation error! \n");
+    // }
+    // printf("They finished; Done!\n");
+    // return 0;
+    printf("J Running ./pipe ls\n");    
+    // Execute ls command
+    execlp("ls", "ls", "-a", "-l", NULL);
+    
+    // If execlp returns, an error occurred
+    perror("execlp");
+    return EXIT_FAILURE;
 
 }
 
