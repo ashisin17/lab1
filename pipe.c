@@ -21,52 +21,72 @@ int main(int argc, char *argv[])
     }
 
     int num_progs = argc-1;
-    int pipe_fds[2];
-    
+    int prev_pipe_fds[2];
+    int curr_pipe_fds[2];
+
+    // check if inital
+    if (pipe(prev_pipe_fds) == -1) {
+        perror("pipe creation ERROR");
+        exit(EXIT_FAILURE);
+    }
+
     for(int i = 0; i < num_progs; i++){
-        if(i < num_progs - 1) { // create the pipe before FORKING if NOT the last process
-            if(pipe(pipe_fds) == -1){
-                perror("pipe");
+        if(i < num_progs - 1) { 
+            // create the pipe before FORKING if NOT the last process
+            if (pipe(curr_pipe_fds) == -1) {
+                perror("pipe creation ERROR");
                 exit(EXIT_FAILURE);
             }
         }
 
-        // this is NOT the last process
         pid_t pid = fork();
         if (pid == -1) {
-            perror("fork");
+            perror("fork ERROR");
             exit(EXIT_FAILURE);
         }
         else if(pid == 0){ // child process
-            // redirect INPUT (change std in to #3) if NOT first process
             printf("Child %d: %s\n", getpid(), argv[i + 1]);
+            
+            // redirect INPUT (change INPUT to #3) if NOT first process
             if (i != 0) {
-                dup2(pipe_fds[0], STDIN_FILENO);
-                close(pipe_fds[0]);
+                dup2(prev_pipe_fds[0], STDIN_FILENO);
+                close(prev_pipe_fds[0]);
+                close(prev_pipe_fds[1]);
             }
 
             // redirect output if NOT the last process
             if (i != num_progs - 1) {
-                dup2(pipe_fds[1], STDOUT_FILENO);
-                close(pipe_fds[1]);
+                dup2(curr_pipe_fds[1], STDOUT_FILENO);
+                close(curr_pipe_fds[0]);
+                close(curr_pipe_fds[1]);
             }
 
             // exec the program
             execlp(argv[i + 1], argv[i + 1], NULL);
             perror("execlp");
             exit(EXIT_FAILURE);
-
         }
+
         else { // PARENT process
             printf("Parent: Waiting for child %d\n", pid);
-            if (i < num_progs - 1) {
-                close(pipe_fds[0]);
-                close(pipe_fds[1]);
+            if (i > 0) {
+                close(prev_pipe_fds[0]);
+                close(prev_pipe_fds[1]);
+            }
+            if (i < num_progs - 1) { // copy over the inputs and output pointers
+                prev_pipe_fds[0] = curr_pipe_fds[0];
+                prev_pipe_fds[1] = curr_pipe_fds[1];
             }
             wait(NULL);
             printf("Parent: Child %d finished\n", pid);
         }
     }
+    // Close the final pipe in the parent process
+    if (num_progs > 1) {
+        close(prev_pipe_fds[0]);
+        close(prev_pipe_fds[1]);
+    }
+
     return 0;
 }
 
