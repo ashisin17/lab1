@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
     int num_progs = argc-1;
     int pipe_fds[2];
     
-    for(int i = 0; i < num_progsl i++){
-        if(i < num_progs - 1) { // create the pipe before FORKING if NOT the last process
+    for(int i = 0; i < num_progs; i++){
+        if(i < c - 1) { // create the pipe before FORKING if NOT the last process
             if(pipe(pipe_fds) == -1){
                 perror("pipe");
                 exit(EXIT_FAILURE);
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
             }
 
             // redirect output if NOT the last process
-            if (i != num_programs - 1) {
+            if (i != num_progs - 1) {
                 dup2(pipe_fds[1], STDOUT_FILENO);
                 close(pipe_fds[1]);
             }
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         }
         else { // PARENT process
             printf("Parent: Waiting for child %d\n", pid);
-            if (i < num_programs - 1) {
+            if (i < num_progs - 1) {
                 close(pipe_fds[0]);
                 close(pipe_fds[1]);
             }
