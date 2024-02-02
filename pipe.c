@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
         else if(pid == 0){ // child process
-            printf("Child %d: %s\n", getpid(), argv[i + 1]);
+            // printf("Child %d: %s\n", getpid(), argv[i + 1]);
             
             // redirect INPUT (change INPUT to #3) if NOT first process
             if (i != 0) {
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         }
 
         else { // PARENT process
-            printf("Parent: Waiting for child %d\n", pid);
+            // printf("Parent: Waiting for child %d\n", pid);
             if (i > 0) {
                 close(prev_pipe_fds[0]);
                 close(prev_pipe_fds[1]);
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
                 prev_pipe_fds[1] = curr_pipe_fds[1];
             }
             wait(NULL);
-            printf("Parent: Child %d finished\n", pid);
+            // printf("Parent: Child %d finished\n", pid);
         }
     }
     // Close the final pipe in the parent process
