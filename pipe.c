@@ -77,7 +77,29 @@ int main(int argc, char *argv[])
                 prev_pipe_fds[0] = curr_pipe_fds[0];
                 prev_pipe_fds[1] = curr_pipe_fds[1];
             }
-            wait(NULL);
+            
+            int status;
+
+            // handling the bogus argument cases
+            pid_t child_pid;
+            while ((child_pid = waitpid(-1, &status, 0)) > 0) {
+                if (WIFEXITED(status)) {
+                    int exit_status = WEXITSTATUS(status);
+                    if (exit_status != 0) {
+                        fprintf(stderr, "Child process %d terminated with non-zero exit status: %d\n", child_pid, exit_status);
+                        exit(EXIT_FAILURE);
+                    }
+                } else {
+                    fprintf(stderr, "Child process %d terminated abnormally\n", child_pid);
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            if (child_pid == -1 && errno != ECHILD) {
+                perror("waitpid");
+                exit(EXIT_FAILURE);
+            }
+
             // printf("Parent: Child %d finished\n", pid);
         }
     }
