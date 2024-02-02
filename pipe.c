@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     int pipe_fds[2];
     
     for(int i = 0; i < num_progs; i++){
-        if(i < c - 1) { // create the pipe before FORKING if NOT the last process
+        if(i < num_progs - 1) { // create the pipe before FORKING if NOT the last process
             if(pipe(pipe_fds) == -1){
                 perror("pipe");
                 exit(EXIT_FAILURE);
