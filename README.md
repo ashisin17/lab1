@@ -2,16 +2,18 @@
 
 ## Pipe Up
 
-One sentence description
+This program replicates teh behavior of the pipe operators in Unix-Like operating systems.
 
 ## Building
 
-Explain briefly how to build your program
+The Makefile has been set up. Simply using make will generate the executable for pipe.
 
 ## Running
 
-Show an example run of your program, using at least two additional arguments, and what to expect
+Here's an example of the program running: ./pipe ls cat wc
+This will execute ls, cat, wc in that order.
+The expected output is that of 'ls | cat | wc'
 
 ## Cleaning up
 
-Explain briefly how to clean up all binary files
+To clean up the binary files, simply running make clean will remove the pipe executable and any other temporary files created. 
