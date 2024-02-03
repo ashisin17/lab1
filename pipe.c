@@ -15,6 +15,12 @@ pipe()
 */
 int main(int argc, char *argv[])
 {
+    // added because on the spec
+    if (argc == 1) {
+        errno = EINVAL; // Set errno to EINVAL
+        perror("error"); 
+        exit(errno); 
+    }
     //check for argument size
     if(argc < 2){
         fprintf(stderr, "Usage: %s ENTER the right amount of arguments\n", argv[0]);
@@ -112,30 +118,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-// DISCUSSIOn
-// // TODO: it's all yours
-// 	// return 0;
-
-// 	int pipe_fds[2];
-// 	pipe(pipe_fds); // create a pipe of two ends
-// 	fork();
-
-// 	close(pipe_fds);
-// 	dup2(pipe_fds[1])
-// 	close(pipe_fds[0])
-// 	pipe(pipe_fds)
-// 	fork()
-
-// 	//for loop
-// 	dup2(pipe_fds[1], 1);
-// 	close(pipe_fds[1])
-// 	close(pipe_fds[0])
-
-// 	if (1 <= i <= argc) {
-// 		if (i =1)
-// 			//1st program
-// 		else if(i == argc-1){
-// 			//last program
-// 		}
-// 	}
